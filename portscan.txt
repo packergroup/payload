@@ -1,0 +1,21 @@
+$ports = (22,23,114,445,1433,1521,3050,3306,3389,4899,5432,5900)
+$networks = ("172.16.33", "172,19,105", "172.16.35", "172.16.65", "10.212.16", "10.212.144")
+$range = (1..254)
+$ErrorActionPreference = 'silentlycontinue'
+
+$(Foreach ($n in $networks) {
+    $(Foreach ($e in $range) {
+        if(Test-Connection -BufferSize 32 -Count 1 -quiet -ComputerName $ip) {
+            $(Foreach ($p in $ports) {
+                $ip = "{0}.{1}" -F $n,$e
+                Write-Progress "Scannin $ip port $p"
+                $socket = New-Object System.Net.Sockets.tcpClient($ip,$p) 
+                if($socket.Connected) {
+                    "$ip port $p Connected"
+                    $socket.Close()
+                }
+                else {"$ip port $p not open"}
+            })
+        }
+       })
+}) | Out-File D:\jeptc\scan.csv
